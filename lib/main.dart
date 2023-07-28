@@ -1,20 +1,6 @@
 
 import 'utils/common.dart';
-  Future<void> requestLocationPermission() async {
-  var locationStatus = await Permission.location.request();
-  var nearbyStatus = await  Permission.nearbyWifiDevices.request();
-  await Permission.bluetoothScan.request();
-  await Permission.bluetooth.request();
-  await Permission.bluetoothAdvertise.request();
-  await Permission.bluetoothConnect.request();
-  if (locationStatus.isDenied||nearbyStatus.isDenied) {
-    // Handle denied permission
-  } else if (locationStatus.isPermanentlyDenied||nearbyStatus.isPermanentlyDenied) {
-    // Handle permanently denied permission
-  } else if (locationStatus.isGranted||nearbyStatus.isGranted) {
-    // Permission is granted, proceed with Wi-Fi Direct interactions
-  }
-}
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   requestLocationPermission().then((value) => runApp(const MyApp()));
@@ -37,4 +23,22 @@ class _MyAppState extends State<MyApp> {
       home: Home()
     );
   }
+}
+
+  // ask user permission
+
+  Future<void> requestLocationPermission() async {
+            var locationStatus = await Permission.location.request();
+            var nearbyStatus = await  Permission.nearbyWifiDevices.request();
+            await Permission.bluetoothScan.request();
+            await Permission.bluetooth.request();
+            await Permission.bluetoothAdvertise.request();
+            await Permission.bluetoothConnect.request();
+            if (locationStatus.isDenied||nearbyStatus.isDenied) {
+              // Handle denied permission
+            } else if (locationStatus.isPermanentlyDenied||nearbyStatus.isPermanentlyDenied) {
+              // Handle permanently denied permission
+            } else if (locationStatus.isGranted||nearbyStatus.isGranted) {
+              // Permission is granted, proceed with Wi-Fi Direct interactions
+            }
 }
