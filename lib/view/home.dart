@@ -11,6 +11,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<DiscoveredDevice> devices = [];
   Map<String, DateTime> lastSeenMap = {};
+  String connectedDevice='';
+  String status='';
 
   void addOrUpdateDevice(DiscoveredDevice newDevice) {
     // Check if the device already exists in the list
@@ -53,13 +55,31 @@ class _HomeState extends State<Home> {
       devicesToRemove.forEach(lastSeenMap.remove); // Remove from the lastSeenMap
     });
   }
-
+  
   void scan() async {
     FlutterReactiveBle().scanForDevices(withServices: []).listen((event) {
       print(event.name.toString());
       addOrUpdateDevice(event);
     });
   }
+
+  Future<void> connect(id)async{
+      FlutterReactiveBle().connectToDevice(
+          id: id,
+          // Set optional parameters if needed, like connectionTimeout, etc.
+          connectionTimeout: Duration(seconds: 30),
+        ).listen((event) {
+          setState(() {
+            status=event.connectionState.name;
+            devices.forEach((element) {
+              if(element.id==event.deviceId){
+                connectedDevice=element.name;
+              }
+            });
+          });
+        });
+  }
+
 
   @override
   void initState() {
@@ -78,13 +98,14 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Devices ',
+          '$status $connectedDevice',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).colorScheme.onSecondary,
             fontFamily: 'Lexend'
           ),
         ),
+  
       ),
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -93,56 +114,61 @@ class _HomeState extends State<Home> {
           itemCount: devices.length,
           itemBuilder: (context, index) => Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Card(
-              elevation: 10,
-              shadowColor: Theme.of(context).colorScheme.primary,
-              child: ListTile(
-                contentPadding: EdgeInsets.all(10),
-                title:  Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  devices.elementAt(index).name,
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Lexend'
-                  ),
-                ),
-                SizedBox(height: 10), // Add space of 4 logical pixels between title and subtitle
-              ],
-            ),
-                
-                subtitle: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          devices.elementAt(index).id,
-                          style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                              fontFamily: 'Lexend',
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Text('RSSI :',
-                            style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                              fontFamily: 'Lexend',
-                              fontWeight: FontWeight.bold
-                            ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              devices.elementAt(index).rssi.toString(),
-                              style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                              fontFamily: 'Lexend',
-                          ),
-                            ),
-                          ],
-                        ),
-                      ],
+            child: InkWell(
+              onTap: ()async{
+               await connect(devices.elementAt(index).id);
+              },
+              child: Card(
+                elevation: 10,
+                shadowColor: Theme.of(context).colorScheme.primary,
+                child: ListTile(
+                  contentPadding: EdgeInsets.all(10),
+                  title:  Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    devices.elementAt(index).name,
+                    style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Lexend'
                     ),
-                  ],
+                  ),
+                  SizedBox(height: 10), // Add space of 4 logical pixels between title and subtitle
+                ],
+              ),
+                  
+                  subtitle: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            devices.elementAt(index).id,
+                            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                fontFamily: 'Lexend',
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Text('RSSI :',
+                              style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                                fontFamily: 'Lexend',
+                                fontWeight: FontWeight.bold
+                              ),
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                devices.elementAt(index).rssi.toString(),
+                                style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                fontFamily: 'Lexend',
+                            ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

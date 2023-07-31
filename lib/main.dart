@@ -1,7 +1,7 @@
 
 import 'utils/common.dart';
 
-void main() async{
+Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
   requestLocationPermission().then((value) => runApp(const MyApp()));
 }
@@ -29,11 +29,18 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> requestLocationPermission() async {
             var locationStatus = await Permission.location.request();
+            
             var nearbyStatus = await  Permission.nearbyWifiDevices.request();
             await Permission.bluetoothScan.request();
             await Permission.bluetooth.request();
             await Permission.bluetoothAdvertise.request();
             await Permission.bluetoothConnect.request();
+            var status=await Permission.bluetooth.status;
+                        print('blustatus $status');
+
+            if (!status.isGranted) {
+                await Permission.bluetooth.request();
+              }
             if (locationStatus.isDenied||nearbyStatus.isDenied) {
               // Handle denied permission
             } else if (locationStatus.isPermanentlyDenied||nearbyStatus.isPermanentlyDenied) {
